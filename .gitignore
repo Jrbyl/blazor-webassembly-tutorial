@@ -7,3 +7,5 @@ bin
 obj
 logs
 *.log
+/MyBlazorProject/MyBlazorProject/appsettings.Development.json
+/MyBlazorProject/MyBlazorProject/wwwroot/appsettings.Development.json

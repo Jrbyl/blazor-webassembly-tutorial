@@ -1,0 +1,158 @@
+﻿@page "/fetchdata"
+@using System.Text.Json.Serialization
+@inject HttpClient Http
+@inject IConfiguration Configuration
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a public API.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>City</th>
+                <th>Local Time</th>
+                <th>Temperature</th>
+                <th>Condition</th>
+                <th>UV</th>
+                <th>Precipitation</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>
+                        @forecast.Location.Name, @forecast.Location.Region <br/>
+                        Lat: @forecast.Location.Lat, Lon: @forecast.Location.Lon <br/>
+                    </td>
+                    <td>
+                        @forecast.Location.LocalTime
+                    </td>
+                    <td>
+                        @forecast.Current.TempF (F) <br/>
+                        @forecast.Current.TempC (C)
+                    </td>
+                    <td>
+                        @forecast.Current.Condition.Text <img src="@($"https:{forecast.Current.Condition.Icon}")" alt="@forecast.Current.Condition.Text"/>
+                    </td>
+                    <td>
+                        @forecast.Current.Uv
+                    </td>
+                    <td>
+                        Rain: @forecast.Current.ChanceOfRain % <br/>
+                        Snow: @forecast.Current.ChanceOfSnow %
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<WeatherResponse?> forecasts;
+    private string[] cities = {"Des Moines", "West Des Moines", "Urbandale", "Ankeny", "Waukee", "Clive", "Chicago", "New York City", "Los Angeles", "London", "Sydney", "Tokyo", "Cape Town", "Buenos Aires"};
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = new();
+        var apiKey = Configuration["WeatherApi:ApiKey"];
+        foreach (var city in cities)
+        {
+            var url = $"https://api.weatherapi.com/v1/current.json?key={apiKey}&q={city}&aqi=no";
+            forecasts.Add(await Http.GetFromJsonAsync<WeatherResponse>(url));
+        }
+    }
+
+    public class WeatherResponse
+    {
+        [JsonPropertyName("location")]
+        public Location? Location { get; set; }
+
+        [JsonPropertyName("current")]
+        public Current? Current { get; set; }
+    }
+
+    public class Location
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("region")]
+        public string? Region { get; set; }
+
+        [JsonPropertyName("country")]
+        public string? Country { get; set; }
+
+        [JsonPropertyName("lat")]
+        public double Lat { get; set; }
+
+        [JsonPropertyName("lon")]
+        public double Lon { get; set; }
+
+        [JsonPropertyName("tz_id")]
+        public string? TimeZoneId { get; set; }
+
+        [JsonPropertyName("localtime_epoch")]
+        public long LocalTimeEpoch { get; set; }
+
+        [JsonPropertyName("localtime")]
+        public string? LocalTime { get; set; }
+    }
+
+    public class Current
+    {
+        [JsonPropertyName("temp_c")]
+        public double TempC { get; set; }
+
+        [JsonPropertyName("temp_f")]
+        public double TempF { get; set; }
+
+        [JsonPropertyName("is_day")]
+        public int IsDay { get; set; }
+
+        [JsonPropertyName("condition")]
+        public Condition? Condition { get; set; }
+
+        [JsonPropertyName("wind_mph")]
+        public double WindMph { get; set; }
+
+        [JsonPropertyName("wind_dir")]
+        public string? WindDirection { get; set; }
+
+        [JsonPropertyName("uv")]
+        public double Uv { get; set; }
+
+        [JsonPropertyName("will_it_rain")]
+        public int WillItRain { get; set; }
+
+        [JsonPropertyName("chance_of_rain")]
+        public int ChanceOfRain { get; set; }
+
+        [JsonPropertyName("will_it_snow")]
+        public int WillItSnow { get; set; }
+
+        [JsonPropertyName("chance_of_snow")]
+        public int ChanceOfSnow { get; set; }
+    }
+
+    public class Condition
+    {
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
+
+        [JsonPropertyName("icon")]
+        public string? Icon { get; set; }
+
+        [JsonPropertyName("code")]
+        public int Code { get; set; }
+    }
+}

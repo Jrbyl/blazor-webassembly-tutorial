@@ -2,3 +2,10 @@
 node_modules
 .tmp
 npm-debug.log
+.vs
+bin
+obj
+logs
+*.log
+/MyBlazorProject/MyBlazorProject/appsettings.Development.json
+/MyBlazorProject/MyBlazorProject/wwwroot/appsettings.Development.json
